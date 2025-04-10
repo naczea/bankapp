@@ -1,19 +1,30 @@
 package com.naczea.bankapp.services;
 
+import com.naczea.bankapp.entities.Account;
 import com.naczea.bankapp.entities.Movement;
+import com.naczea.bankapp.exception.AccountNotFoundException;
+import com.naczea.bankapp.exception.InsufficientBalanceException;
+import com.naczea.bankapp.repositories.AccountRepository;
 import com.naczea.bankapp.repositories.MovementRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 public class MovementServiceImpl implements MovementService {
+    private static final Logger LOGGER = Logger.getLogger(MovementServiceImpl.class.getName());
     private final MovementRepository movementRepository;
+    private final AccountRepository accountRepository;
 
-    public MovementServiceImpl(MovementRepository movementRepository) {
+    public MovementServiceImpl(MovementRepository movementRepository, AccountRepository accountRepository) {
         this.movementRepository = movementRepository;
+        this.accountRepository = accountRepository;
     }
 
     public Movement findById(Long id) {
@@ -35,12 +46,48 @@ public class MovementServiceImpl implements MovementService {
     @Override
     @Transactional
     public Movement saveMovement(Movement movement){
-        try {
-            return movementRepository.save(movement);
-        }catch (Exception e){
-            e.printStackTrace();
-            throw new IllegalArgumentException("Problems in the creation of [Movement]: " + e.getMessage());
+        Account account = accountRepository.findById(movement.getAccount().getId()).orElse(null);
+        if(Objects.isNull(account)){
+            throw new AccountNotFoundException("Cuenta con ID " + movement.getAccount().getId() + " no encontrada.");
         }
+
+        BigDecimal value = movement.getValue();
+        if(value.compareTo(BigDecimal.ZERO) >= 0){
+            return depositMoney(movement, account);
+        }else{
+            return withdrawalMoney(movement,account);
+        }
+    }
+
+    public Movement depositMoney(Movement movement, Account account){
+        LOGGER.log(Level.INFO, "MOVEMENT TYPE: DEPOSIT");
+        BigDecimal balance = account.getOpeningBalance();
+        BigDecimal newBalance = balance.add(movement.getValue());
+        return updateTransaction(movement, account, newBalance);
+    }
+
+    public Movement withdrawalMoney(Movement movement, Account account){
+        LOGGER.log(Level.INFO, "MOVEMENT TYPE: WITHDRAWAL");
+        BigDecimal balance = account.getOpeningBalance();
+        if(movement.getValue().abs().compareTo(balance) < 0){
+            BigDecimal newBalance = balance.subtract(movement.getValue().abs());
+            return updateTransaction(movement, account, newBalance);
+        }else{
+            throw new InsufficientBalanceException("Saldo insuficiente para realizar el retiro.");
+        }
+    }
+
+    private Movement updateTransaction(Movement movement, Account account, BigDecimal newBalance) {
+        newBalance = newBalance.setScale(2, BigDecimal.ROUND_HALF_UP);
+        Integer movementNumber = account.getMovementNumber() + 1;
+        account.setMovementNumber(movementNumber);
+        account.setOpeningBalance(newBalance);
+        accountRepository.save(account);
+        LOGGER.log(Level.INFO, "FINISH UPDATE ACCOUNT WITH NUMBER {0} <====== ", account.getNumber());
+        movement.setType(account.getType());
+        movement.setBalance(newBalance);
+        LOGGER.log(Level.INFO, "FINISH SAVE MOVEMENT WITH VALUE {0} <====== ", movement.getValue());
+        return movementRepository.save(movement);
     }
 
 }

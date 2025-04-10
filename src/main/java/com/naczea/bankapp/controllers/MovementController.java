@@ -1,6 +1,8 @@
 package com.naczea.bankapp.controllers;
 
 import com.naczea.bankapp.entities.Movement;
+import com.naczea.bankapp.exception.AccountNotFoundException;
+import com.naczea.bankapp.exception.InsufficientBalanceException;
 import com.naczea.bankapp.services.MovementService;
 import com.naczea.bankapp.util.ConstantsUtil;
 import com.naczea.bankapp.util.ResponseUtil;
@@ -86,6 +88,12 @@ public class MovementController {
                     movementNew
             );
             return new ResponseEntity<>(responseUtil, HttpStatus.OK);
+        } catch (AccountNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseUtil(ResponseUtilStatus.ERROR, e.getMessage(), null, null));
+        } catch (InsufficientBalanceException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseUtil(ResponseUtilStatus.ERROR, e.getMessage(), null, null));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ConstantsUtil.NO_RESPONSE);

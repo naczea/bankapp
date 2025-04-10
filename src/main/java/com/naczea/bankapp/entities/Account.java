@@ -32,6 +32,8 @@ public class Account {
     @NotNull(message ="The field [openingBalance-Account] is required")
     private BigDecimal openingBalance;
 
+    private Integer movementNumber = 0;
+
     @ManyToOne
     private Client client;
 }
