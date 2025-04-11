@@ -9,4 +9,5 @@ import java.util.List;
 public interface MovementRepository extends JpaRepository<Movement, Long> {
     List<Movement> findByAccountId(Long accountId);
     List<Movement> findByAccountIdAndDateTimeBetween(Long accountId, Date dateTo, Date dateFrom);
+    List<Movement> findByAccountClientIdentificationAndDateTimeBetween(String identification, Date startDate, Date endDate);
 }

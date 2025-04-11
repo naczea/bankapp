@@ -63,21 +63,21 @@ public class MovementServiceImpl implements MovementService {
         LOGGER.log(Level.INFO, "MOVEMENT TYPE: DEPOSIT");
         BigDecimal balance = account.getOpeningBalance();
         BigDecimal newBalance = balance.add(movement.getValue());
-        return updateTransaction(movement, account, newBalance);
+        return updateTransaction(movement, account, newBalance, balance);
     }
 
     public Movement withdrawalMoney(Movement movement, Account account){
         LOGGER.log(Level.INFO, "MOVEMENT TYPE: WITHDRAWAL");
         BigDecimal balance = account.getOpeningBalance();
-        if(movement.getValue().abs().compareTo(balance) < 0){
+        if(movement.getValue().abs().compareTo(balance) <= 0){
             BigDecimal newBalance = balance.subtract(movement.getValue().abs());
-            return updateTransaction(movement, account, newBalance);
+            return updateTransaction(movement, account, newBalance, balance);
         }else{
             throw new InsufficientBalanceException("Saldo insuficiente para realizar el retiro.");
         }
     }
 
-    private Movement updateTransaction(Movement movement, Account account, BigDecimal newBalance) {
+    private Movement updateTransaction(Movement movement, Account account, BigDecimal newBalance, BigDecimal balance) {
         newBalance = newBalance.setScale(2, BigDecimal.ROUND_HALF_UP);
         Integer movementNumber = account.getMovementNumber() + 1;
         account.setMovementNumber(movementNumber);
@@ -85,7 +85,7 @@ public class MovementServiceImpl implements MovementService {
         accountRepository.save(account);
         LOGGER.log(Level.INFO, "FINISH UPDATE ACCOUNT WITH NUMBER {0} <====== ", account.getNumber());
         movement.setType(account.getType());
-        movement.setBalance(newBalance);
+        movement.setBalance(balance);
         LOGGER.log(Level.INFO, "FINISH SAVE MOVEMENT WITH VALUE {0} <====== ", movement.getValue());
         return movementRepository.save(movement);
     }

@@ -1,7 +1,7 @@
     package com.naczea.bankapp.controllers;
 
-import com.naczea.bankapp.entities.Movement;
-import com.naczea.bankapp.services.MovementService;
+import com.naczea.bankapp.dto.ReportFormat;
+import com.naczea.bankapp.services.ReportService;
 import com.naczea.bankapp.util.ConstantsUtil;
 import com.naczea.bankapp.util.ResponseUtil;
 import com.naczea.bankapp.util.ResponseUtilStatus;
@@ -19,24 +19,24 @@ import java.util.List;
 @RequestMapping("/reportes")
 public class ReportController {
 
-    private final MovementService movementService;
+    private final ReportService reportService;
 
-    public ReportController(MovementService movementService) {
-        this.movementService = movementService;
+    public ReportController(ReportService reportService) {
+        this.reportService = reportService;
     }
 
-    @GetMapping("/movementsByDateRangeClientId")
-    public ResponseEntity<?> getByDateRangeClientIdRequest(
-            @RequestParam("dateFrom") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateFrom,
-            @RequestParam("dateTo") @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateTo,
-            @RequestParam(required = false) Long accountId){
+    @GetMapping("/reportByDate")
+    public ResponseEntity<?> getByDateRangeClientIdentificationRequest(
+            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
+            @RequestParam(required = false) String identification){
         try {
-            List<Movement> movements = movementService.findByDateRangeAccountId(dateTo, dateFrom, accountId);
+            List<ReportFormat> report = reportService.findByDateRangeClientIdentification(identification, startDate, endDate);
             ResponseUtil responseUtil = new ResponseUtil(
-                    movements != null ? ResponseUtilStatus.OK: ResponseUtilStatus.ERROR,
-                    movements != null ? "Registro consultado con exito!": ConstantsUtil.NO_RESPONSE,
-                    Movement.class.getSimpleName(),
-                    movements
+                    report != null ? ResponseUtilStatus.OK: ResponseUtilStatus.ERROR,
+                    report != null ? "Registros consultado con exito!": ConstantsUtil.NO_RESPONSE,
+                    ReportFormat.class.getSimpleName(),
+                    report
             );
             return new ResponseEntity<>(responseUtil, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
