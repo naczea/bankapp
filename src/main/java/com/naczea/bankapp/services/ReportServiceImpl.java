@@ -29,12 +29,13 @@ public class ReportServiceImpl implements ReportService {
         List<Movement> movements = movementRepository.findByAccountClientIdentificationAndDateTimeBetween(identification, startDate, endDate);
         LOGGER.log(Level.INFO, "MOVEMENTS: " + movements.size());
         List<ReportFormat> reportFormats = new ArrayList<>();
-
+        //Map grouping by account
         Map<Long, List<Movement>> movementsByAccountId = movements.stream()
                 .filter(movement -> movement.getAccount() != null && movement.getAccount().getId() != null)
                 .collect(Collectors.groupingBy(movement -> movement.getAccount().getId()));
 
         movementsByAccountId.forEach((accountId, movementList) -> {
+            //The movements are ordered by date
             movementList.sort(Comparator.comparing(Movement::getDateTime));
 
             for (int i = 0; i < movementList.size(); i++) {
@@ -50,6 +51,7 @@ public class ReportServiceImpl implements ReportService {
                 report.setState(current.getAccount().getState());
                 report.setValue(current.getValueTransaction());
 
+                //If there is no next movement, it is the last movement and the account balance is added to it
                 if (Objects.nonNull(next)) {
                     report.setFinalBalance(next.getBalance());
                 } else {

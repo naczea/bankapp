@@ -80,11 +80,15 @@ public class MovementServiceImpl implements MovementService {
     private Movement updateTransaction(Movement movement, Account account, BigDecimal newBalance, BigDecimal balance) {
         newBalance = newBalance.setScale(2, BigDecimal.ROUND_HALF_UP);
         Integer movementNumber = account.getMovementNumber() + 1;
+        //The number of movements is recorded
         account.setMovementNumber(movementNumber);
+        //The account balance is updated
         account.setOpeningBalance(newBalance);
         accountRepository.save(account);
         LOGGER.log(Level.INFO, "FINISH UPDATE ACCOUNT WITH NUMBER {0} <====== ", account.getNumber());
+        //Account information is added
         movement.setType(account.getType());
+        //The initial balance is added
         movement.setBalance(balance);
         LOGGER.log(Level.INFO, "FINISH SAVE MOVEMENT WITH VALUE {0} <====== ", movement.getValueTransaction());
         return movementRepository.save(movement);
