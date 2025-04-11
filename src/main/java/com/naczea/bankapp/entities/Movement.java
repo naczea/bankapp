@@ -31,8 +31,8 @@ public class Movement {
     private BigDecimal balance;
 
     @NotNull(message = "The field [value-Movement] is required")
-    private BigDecimal value;
+    private BigDecimal valueTransaction;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Account account;
 }

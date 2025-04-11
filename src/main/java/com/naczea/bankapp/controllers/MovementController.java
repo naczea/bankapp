@@ -122,7 +122,7 @@ public class MovementController {
             existingMovement.setDateTime(movement.getDateTime());
             existingMovement.setType(movement.getType());
             existingMovement.setBalance(movement.getBalance());
-            existingMovement.setValue(movement.getValue());
+            existingMovement.setValueTransaction(movement.getValueTransaction());
             existingMovement.setAccount(movement.getAccount());
 
             Movement updatedMovement = movementService.saveMovement(existingMovement);

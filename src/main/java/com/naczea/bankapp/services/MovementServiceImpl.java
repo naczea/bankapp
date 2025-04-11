@@ -51,7 +51,7 @@ public class MovementServiceImpl implements MovementService {
             throw new AccountNotFoundException("Cuenta con ID " + movement.getAccount().getId() + " no encontrada.");
         }
 
-        BigDecimal value = movement.getValue();
+        BigDecimal value = movement.getValueTransaction();
         if(value.compareTo(BigDecimal.ZERO) >= 0){
             return depositMoney(movement, account);
         }else{
@@ -62,15 +62,15 @@ public class MovementServiceImpl implements MovementService {
     public Movement depositMoney(Movement movement, Account account){
         LOGGER.log(Level.INFO, "MOVEMENT TYPE: DEPOSIT");
         BigDecimal balance = account.getOpeningBalance();
-        BigDecimal newBalance = balance.add(movement.getValue());
+        BigDecimal newBalance = balance.add(movement.getValueTransaction());
         return updateTransaction(movement, account, newBalance, balance);
     }
 
     public Movement withdrawalMoney(Movement movement, Account account){
         LOGGER.log(Level.INFO, "MOVEMENT TYPE: WITHDRAWAL");
         BigDecimal balance = account.getOpeningBalance();
-        if(movement.getValue().abs().compareTo(balance) <= 0){
-            BigDecimal newBalance = balance.subtract(movement.getValue().abs());
+        if(movement.getValueTransaction().abs().compareTo(balance) <= 0){
+            BigDecimal newBalance = balance.subtract(movement.getValueTransaction().abs());
             return updateTransaction(movement, account, newBalance, balance);
         }else{
             throw new InsufficientBalanceException("Saldo insuficiente para realizar el retiro.");
@@ -86,7 +86,7 @@ public class MovementServiceImpl implements MovementService {
         LOGGER.log(Level.INFO, "FINISH UPDATE ACCOUNT WITH NUMBER {0} <====== ", account.getNumber());
         movement.setType(account.getType());
         movement.setBalance(balance);
-        LOGGER.log(Level.INFO, "FINISH SAVE MOVEMENT WITH VALUE {0} <====== ", movement.getValue());
+        LOGGER.log(Level.INFO, "FINISH SAVE MOVEMENT WITH VALUE {0} <====== ", movement.getValueTransaction());
         return movementRepository.save(movement);
     }
 

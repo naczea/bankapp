@@ -34,6 +34,6 @@ public class Account {
 
     private Integer movementNumber = 0;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Client client;
 }

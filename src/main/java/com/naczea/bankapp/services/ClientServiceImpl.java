@@ -2,9 +2,12 @@ package com.naczea.bankapp.services;
 
 import com.naczea.bankapp.entities.Client;
 import com.naczea.bankapp.repositories.ClientRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 @Service
 public class ClientServiceImpl implements ClientService {
@@ -17,15 +20,27 @@ public class ClientServiceImpl implements ClientService {
     }
 
     public Client findById(Long id) {
-        return clientRepository.findById(id).orElse(null);
+        Client client = clientRepository.findById(id).orElse(null);
+        if(Objects.isNull(client)){
+            throw new EntityNotFoundException("Cliente no encontrado");
+        }
+        return client;
     }
 
     public Client findByClientIdentification(String clientIdentification) {
-        return clientRepository.findByIdentification(clientIdentification);
+        Client client = clientRepository.findByIdentification(clientIdentification);
+        if(Objects.isNull(client)){
+            throw new EntityNotFoundException("Cliente no encontrado");
+        }
+        return client;
     }
 
     public Client findByClientName(String clientName) {
-        return clientRepository.findByName(clientName);
+        Client client = clientRepository.findByName(clientName);
+        if(Objects.isNull(client)){
+            throw new EntityNotFoundException("Cliente no encontrado");
+        }
+        return client;
     }
 
     public void deleteClient(Client client) {

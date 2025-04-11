@@ -48,7 +48,7 @@ public class ReportServiceImpl implements ReportService {
                 report.setType(current.getAccount().getType().toString());
                 report.setInicialBalance(current.getBalance());
                 report.setState(current.getAccount().getState());
-                report.setValue(current.getValue());
+                report.setValue(current.getValueTransaction());
 
                 if (Objects.nonNull(next)) {
                     report.setFinalBalance(next.getBalance());
